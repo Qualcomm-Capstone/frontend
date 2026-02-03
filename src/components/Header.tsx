@@ -31,15 +31,15 @@ const Header: React.FC<HeaderProps> = ({
   };
 
   return (
-    <header className="bg-[#06080f]/80 backdrop-blur-xl border-b border-white/5 px-6 py-3">
+    <header className="bg-[#06080f]/80 backdrop-blur-xl border-b border-white/5 px-6 lg:px-12 py-4">
       <div className="flex items-center justify-between">
         {/* Logo */}
         <div
           className="flex items-center gap-3 cursor-pointer"
           onClick={() => navigate('/')}
         >
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center">
-            <Radar className="w-4 h-4 text-white" />
+          <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center">
+            <Radar className="w-5 h-5 text-white" />
           </div>
           <span className="text-lg font-bold tracking-tight text-white">
             Auto<span className="text-cyan-400">Notify</span>

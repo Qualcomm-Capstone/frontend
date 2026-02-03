@@ -89,9 +89,9 @@ function LandingPage() {
             title="3D Vehicle Scene"
             allow="autoplay"
           />
-          {/* Gradient overlays */}
+          {/* Gradient overlays - pointer-events-none so they never block the iframe */}
           <div
-            className={`absolute inset-0 transition-opacity duration-700 ${
+            className={`absolute inset-0 pointer-events-none transition-opacity duration-700 ${
               is3DMode ? "opacity-10" : "opacity-100"
             }`}
           >
@@ -103,7 +103,7 @@ function LandingPage() {
         {/* Hero Content */}
         <div
           className={`relative z-10 text-center px-6 max-w-4xl mx-auto transition-all duration-700 ${
-            is3DMode ? "opacity-10 blur-sm scale-95" : "opacity-100"
+            is3DMode ? "opacity-10 blur-sm scale-95 pointer-events-none" : "opacity-100"
           }`}
           style={{ opacity: is3DMode ? 0.1 : heroOpacity }}
         >

@@ -1,5 +1,6 @@
 import React from 'react';
-import { ActivitySquare, Search } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Radar, Search, ChevronDown } from 'lucide-react';
 import NotificationCenter from './NotificationCenter';
 
 interface HeaderProps {
@@ -20,7 +21,9 @@ const Header: React.FC<HeaderProps> = ({
   searchPlateNumber,
   setSearchPlateNumber,
   onSearch
-  }) => {
+}) => {
+  const navigate = useNavigate();
+
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       onSearch();
@@ -28,76 +31,77 @@ const Header: React.FC<HeaderProps> = ({
   };
 
   return (
-      <header className="bg-[#0f172a] border-b border-gray-800 px-6 py-4">
-        <div className="flex flex-col sm:flex-row justify-between items-center mb-4">
-          <div className="flex items-center mb-4 sm:mb-0">
-            <ActivitySquare className="text-green-500 w-6 h-6 mr-2" />
-            <h1 className="text-xl font-bold text-white flex items-center">
-              Traffic Control Center
-              <span className="ml-2 text-xs bg-green-500 text-white px-2 py-0.5 rounded-full animate-pulse">
-              LIVE
-            </span>
-            </h1>
+    <header className="bg-[#06080f]/80 backdrop-blur-xl border-b border-white/5 px-6 py-3">
+      <div className="flex items-center justify-between">
+        {/* Logo */}
+        <div
+          className="flex items-center gap-3 cursor-pointer"
+          onClick={() => navigate('/')}
+        >
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center">
+            <Radar className="w-4 h-4 text-white" />
           </div>
-
-          <div className="flex space-x-3">
-            <NotificationCenter />
-            <div className="relative">
-              <select
-                  value={filterType}
-                  onChange={(e) => setFilterType(e.target.value)}
-                  className="bg-[#1e293b] text-gray-200 py-2 pl-4 pr-8 rounded border border-gray-700 appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-600"
-              >
-                <option value="All Violations">All Violations</option>
-                <option value="Checked">Checked</option>
-                <option value="Unchecked">Unchecked</option>
-              </select>
-              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-400">
-                <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                  <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
-                </svg>
-              </div>
-            </div>
-
-            <div className="relative">
-              <select
-                  value={sortOrder}
-                  onChange={(e) => setSortOrder(e.target.value)}
-                  className="bg-[#1e293b] text-gray-200 py-2 pl-4 pr-8 rounded border border-gray-700 appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-600"
-              >
-                <option value="Newest">Newest</option>
-                <option value="Oldest">Oldest</option>
-                <option value="Highest Speed">Highest Speed</option>
-                <option value="Lowest Speed">Lowest Speed</option>
-              </select>
-              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-400">
-                <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                  <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
-                </svg>
-              </div>
-            </div>
-          </div>
+          <span className="text-lg font-bold tracking-tight text-white">
+            Auto<span className="text-cyan-400">Notify</span>
+          </span>
+          <span className="ml-1 text-[10px] bg-cyan-500/20 text-cyan-400 px-2 py-0.5 rounded-full border border-cyan-500/20 font-medium">
+            LIVE
+          </span>
         </div>
 
-        <div className="flex justify-center">
-          <div className="relative w-full max-w-md">
+        {/* Search */}
+        <div className="hidden md:flex flex-1 max-w-md mx-8">
+          <div className="relative w-full">
             <input
-                type="text"
-                value={searchPlateNumber}
-                onChange={(e) => setSearchPlateNumber(e.target.value)}
-                onKeyPress={handleKeyPress}
-                placeholder="Enter a license plate number (e.g., 15가1234)"
-                className="w-full bg-[#1e293b] text-gray-200 py-2 pl-4 pr-10 rounded border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-600"
+              type="text"
+              value={searchPlateNumber}
+              onChange={(e) => setSearchPlateNumber(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder="차량 번호 검색 (예: 15가1234)"
+              className="w-full bg-white/5 text-gray-200 py-2 pl-10 pr-4 rounded-xl border border-white/10 focus:outline-none focus:border-cyan-500/50 focus:bg-white/[0.07] transition-all text-sm placeholder:text-gray-600"
             />
             <button
-                onClick={onSearch}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+              onClick={onSearch}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-cyan-400 transition-colors"
             >
-              <Search className="w-5 h-5" />
+              <Search className="w-4 h-4" />
             </button>
           </div>
         </div>
-      </header>
+
+        {/* Controls */}
+        <div className="flex items-center gap-3">
+          <div className="relative">
+            <select
+              value={filterType}
+              onChange={(e) => setFilterType(e.target.value)}
+              className="appearance-none bg-white/5 text-gray-300 text-sm py-2 pl-3 pr-8 rounded-lg border border-white/10 cursor-pointer focus:outline-none focus:border-cyan-500/50 transition-all"
+            >
+              <option value="All Violations">전체</option>
+              <option value="Checked">확인됨</option>
+              <option value="Unchecked">미확인</option>
+            </select>
+            <ChevronDown className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500" />
+          </div>
+
+          <div className="relative">
+            <select
+              value={sortOrder}
+              onChange={(e) => setSortOrder(e.target.value)}
+              className="appearance-none bg-white/5 text-gray-300 text-sm py-2 pl-3 pr-8 rounded-lg border border-white/10 cursor-pointer focus:outline-none focus:border-cyan-500/50 transition-all"
+            >
+              <option value="Newest">최신순</option>
+              <option value="Oldest">오래된순</option>
+              <option value="Highest Speed">고속순</option>
+              <option value="Lowest Speed">저속순</option>
+            </select>
+            <ChevronDown className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500" />
+          </div>
+
+          <NotificationCenter />
+        </div>
+      </div>
+    </header>
   );
 };
 

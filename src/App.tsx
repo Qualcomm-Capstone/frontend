@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
+import { Routes, Route } from "react-router-dom";
 import Header from "./components/Header";
 import Dashboard from "./components/Dashboard";
 import ViolationDetails from "./components/ViolationDetails";
+import LandingPage from "./components/LandingPage";
 import { Violation } from "./types";
 import Swal from "sweetalert2";
 import VehicleHistory from "./components/VehicleHistory";
@@ -11,7 +13,7 @@ import { messaging } from "./firebase";
 import FCMNotification from "./components/FCMNotification";
 import NotificationCenter from "./components/NotificationCenter";
 
-function App() {
+function DashboardPage() {
   const [violations, setViolations] = useState<Violation[]>([]);
   const [selectedViolation, setSelectedViolation] = useState<Violation | null>(
     null
@@ -156,7 +158,7 @@ function App() {
   return (
     <>
       <FCMNotification/>
-      <div className="min-h-screen bg-[#0f172a] text-gray-100 flex flex-col">
+      <div className="min-h-screen bg-[#06080f] text-gray-100 flex flex-col">
         <Header
           filterType={filterType}
           setFilterType={setFilterType}
@@ -201,6 +203,15 @@ function App() {
         </div>
       </div>
     </>
+  );
+}
+
+function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<LandingPage />} />
+      <Route path="/dashboard" element={<DashboardPage />} />
+    </Routes>
   );
 }
 

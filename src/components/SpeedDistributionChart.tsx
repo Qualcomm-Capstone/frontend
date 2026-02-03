@@ -1,5 +1,5 @@
 import React from 'react';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 
 interface SpeedDistributionChartProps {
   speedData: {
@@ -9,53 +9,52 @@ interface SpeedDistributionChartProps {
   }[];
 }
 
+const COLORS = ['#22d3ee', '#facc15', '#fb923c', '#f87171', '#ef4444'];
+
+const CustomTooltip = ({ active, payload }: any) => {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="bg-[#0c0e16] border border-white/10 rounded-xl px-4 py-3 shadow-xl">
+      <p className="text-xs text-gray-400 mb-1">{payload[0].name}</p>
+      <p className="text-sm font-semibold text-white">{payload[0].value}건</p>
+    </div>
+  );
+};
+
 const SpeedDistributionChart: React.FC<SpeedDistributionChartProps> = ({ speedData }) => {
   const total = speedData.reduce((sum, data) => sum + data.count, 0);
-  
+
   return (
-    <div className="bg-gray-800/50 rounded-xl p-5 border border-gray-700">
-      <h3 className="text-lg font-semibold mb-4 text-white">속도 분포도</h3>
-      
-      <div className="h-[300px]">
+    <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-5">
+      <h3 className="text-sm font-semibold text-white mb-5">속도 분포</h3>
+      <div className="h-[200px]">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
               data={speedData}
               cx="50%"
               cy="50%"
-              labelLine={false}
-              outerRadius={100}
+              innerRadius={55}
+              outerRadius={80}
               fill="#8884d8"
               dataKey="count"
-              label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
+              nameKey="range"
+              strokeWidth={0}
             >
-              {speedData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.color.replace('bg-', '')} />
+              {speedData.map((_entry, index) => (
+                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
               ))}
             </Pie>
-            <Tooltip 
-              contentStyle={{ backgroundColor: '#1F2937', border: '1px solid #374151' }}
-              itemStyle={{ color: '#E5E7EB' }}
-            />
-            <Legend 
-              verticalAlign="bottom" 
-              height={36}
-              formatter={(value) => <span className="text-gray-300">{value}</span>}
-            />
+            <Tooltip content={<CustomTooltip />} />
           </PieChart>
         </ResponsiveContainer>
       </div>
-      
-      <div className="mt-4 grid grid-cols-3 gap-3">
+      <div className="flex flex-wrap gap-3 mt-3 justify-center">
         {speedData.map((data, index) => (
-          <div key={index} className="flex items-center space-x-2 bg-gray-900/50 p-2 rounded-lg">
-            <div className={`w-3 h-3 rounded-sm ${data.color}`} />
-            <div>
-              <p className="text-xs text-gray-400">{data.range}</p>
-              <p className="text-sm font-medium text-white">
-                {data.count}건 ({((data.count / total) * 100).toFixed(0)}%)
-              </p>
-            </div>
+          <div key={index} className="flex items-center gap-1.5 text-xs text-gray-400">
+            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
+            <span>{data.range}</span>
+            <span className="text-gray-600">({total > 0 ? ((data.count / total) * 100).toFixed(0) : 0}%)</span>
           </div>
         ))}
       </div>

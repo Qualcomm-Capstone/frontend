@@ -1,106 +1,111 @@
 import React from 'react';
 import { Violation } from '../types';
 import { formatDate } from '../utils/helpers';
-import { Car, Calendar, MapPin, AlertTriangle } from 'lucide-react';
+import { Car, Calendar, MapPin, X } from 'lucide-react';
 
 interface VehicleHistoryProps {
-    violations: Violation[];
-    plateNumber: string;
-    onClose: () => void;
+  violations: Violation[];
+  plateNumber: string;
+  onClose: () => void;
 }
 
 const VehicleHistory: React.FC<VehicleHistoryProps> = ({ violations, plateNumber, onClose }) => {
-    const totalFines = violations.reduce((sum, v) => sum + (v.fineAmount || 0), 0);
-    const avgSpeed = Math.round(violations.reduce((sum, v) => sum + v.car_speed, 0) / violations.length);
+  const totalFines = violations.reduce((sum, v) => sum + (v.fineAmount || 0), 0);
+  const avgSpeed = violations.length > 0
+    ? Math.round(violations.reduce((sum, v) => sum + v.car_speed, 0) / violations.length)
+    : 0;
 
-    return (
-        <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700 mb-6">
-            <div className="flex justify-between items-center mb-6">
-                <div className="flex items-center space-x-3">
-                    <Car className="w-6 h-6 text-blue-400" />
-                    <h2 className="text-xl font-bold text-white">Vehicle Violation History</h2>
-                </div>
-                <button
-                    onClick={onClose}
-                    className="text-gray-400 hover:text-white transition-colors"
-                >
-                    ✕
-                </button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                <div className="bg-gray-900/50 p-4 rounded-lg">
-                    <div className="text-sm text-gray-400">License Plate</div>
-                    <div className="text-xl font-bold text-white">{plateNumber}</div>
-                </div>
-                <div className="bg-gray-900/50 p-4 rounded-lg">
-                    <div className="text-sm text-gray-400">Total number of violations</div>
-                    <div className="text-xl font-bold text-white">{violations.length}Case</div>
-                </div>
-                <div className="bg-gray-900/50 p-4 rounded-lg">
-                    <div className="text-sm text-gray-400">Total Fine</div>
-                    <div className="text-xl font-bold text-white">{totalFines.toLocaleString()}Won</div>
-                </div>
-            </div>
-
-            <div className="space-y-4">
-                {violations.map((violation) => (
-                    <div
-                        key={violation.id}
-                        className="bg-gray-900/50 p-4 rounded-lg flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0"
-                    >
-                        <div className="flex items-center space-x-4">
-                            <div className="w-20 h-20 rounded-lg overflow-hidden">
-                                <img
-                                    src={violation.image_url}
-                                    alt={`Vehicle ${violation.car_number}`}
-                                    className="w-full h-full object-cover"
-                                />
-                            </div>
-                            <div>
-                                <div className="flex items-center space-x-2 mb-2">
-                                    <Calendar className="w-4 h-4 text-gray-400" />
-                                    <span className="text-gray-300">{formatDate(new Date(violation.created_at))}</span>
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                    <MapPin className="w-4 h-4 text-gray-400" />
-                                    <span className="text-gray-300">{violation.location}</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="flex items-center space-x-6">
-                            <div>
-                                <div className="text-sm text-gray-400">Speeding</div>
-                                <div className={`text-lg font-bold ${
-                                    violation.car_speed >= 120 ? 'text-red-400' :
-                                        violation.car_speed >= 100 ? 'text-orange-400' :
-                                            'text-yellow-400'
-                                }`}>
-                                    {violation.car_speed} km/h
-                                </div>
-                            </div>
-                            <div>
-                                <div className="text-sm text-gray-400">Fine</div>
-                                <div className="text-lg font-bold text-white">
-                                    {violation.fineAmount?.toLocaleString()}Won
-                                </div>
-                            </div>
-                            <div>
-                                <div className="text-sm text-gray-400">State</div>
-                                <div className={`inline-block px-2 py-1 rounded-full text-sm ${
-                                    violation.is_checked
-                                        ? 'bg-green-900/50 text-green-400'
-                                        : 'bg-red-900/50 text-red-400'
-                                }`}>
-                                    {violation.is_checked ? 'checked' : 'unchecked'}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                ))}
-            </div>
+  return (
+    <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-6 mb-6">
+      <div className="flex justify-between items-center mb-6">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-cyan-500/10 flex items-center justify-center">
+            <Car className="w-5 h-5 text-cyan-400" />
+          </div>
+          <h2 className="text-lg font-bold text-white">차량 위반 이력</h2>
         </div>
-    );
+        <button
+          onClick={onClose}
+          className="p-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 transition-all"
+        >
+          <X className="w-4 h-4 text-gray-400" />
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div className="bg-white/[0.03] border border-white/5 p-4 rounded-xl">
+          <div className="text-[11px] text-gray-500 uppercase tracking-wider mb-1">번호판</div>
+          <div className="text-xl font-bold text-white">{plateNumber}</div>
+        </div>
+        <div className="bg-white/[0.03] border border-white/5 p-4 rounded-xl">
+          <div className="text-[11px] text-gray-500 uppercase tracking-wider mb-1">총 위반 횟수</div>
+          <div className="text-xl font-bold text-white">{violations.length}<span className="text-sm text-gray-500 ml-1">건</span></div>
+        </div>
+        <div className="bg-white/[0.03] border border-white/5 p-4 rounded-xl">
+          <div className="text-[11px] text-gray-500 uppercase tracking-wider mb-1">총 벌금</div>
+          <div className="text-xl font-bold text-white">{totalFines.toLocaleString()}<span className="text-sm text-gray-500 ml-1">원</span></div>
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        {violations.map((violation) => (
+          <div
+            key={violation.id}
+            className="bg-white/[0.02] border border-white/5 p-4 rounded-xl flex flex-col md:flex-row md:items-center md:justify-between gap-4"
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-xl overflow-hidden border border-white/10 flex-shrink-0">
+                <img
+                  src={violation.image_url}
+                  alt={`Vehicle ${violation.car_number}`}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 text-sm text-gray-400">
+                  <Calendar className="w-3.5 h-3.5" />
+                  <span>{formatDate(new Date(violation.created_at))}</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-gray-400">
+                  <MapPin className="w-3.5 h-3.5" />
+                  <span>{violation.location || 'Seoul'}</span>
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center gap-6">
+              <div>
+                <div className="text-[10px] text-gray-500 uppercase mb-0.5">속도</div>
+                <div className={`text-lg font-bold ${
+                  violation.car_speed >= 120 ? 'text-red-400' :
+                  violation.car_speed >= 100 ? 'text-orange-400' :
+                  'text-yellow-400'
+                }`}>
+                  {violation.car_speed} km/h
+                </div>
+              </div>
+              <div>
+                <div className="text-[10px] text-gray-500 uppercase mb-0.5">벌금</div>
+                <div className="text-lg font-bold text-white">
+                  {violation.fineAmount?.toLocaleString() || 0}원
+                </div>
+              </div>
+              <div>
+                <div className="text-[10px] text-gray-500 uppercase mb-0.5">상태</div>
+                <span className={`inline-flex items-center gap-1.5 text-xs ${
+                  violation.is_checked ? 'text-cyan-400' : 'text-gray-500'
+                }`}>
+                  <span className={`w-1.5 h-1.5 rounded-full ${
+                    violation.is_checked ? 'bg-cyan-400' : 'bg-gray-600'
+                  }`} />
+                  {violation.is_checked ? '확인됨' : '미확인'}
+                </span>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 };
 
 export default VehicleHistory;

@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { Violation } from '../types';
-import { CalendarDays, MapPin, Car, AlertCircle, X } from 'lucide-react';
+import { CalendarDays, MapPin, AlertCircle, X, Gauge } from 'lucide-react';
 import { getDangerLevel } from '../utils/helpers';
-
 
 interface ViolationDetailsProps {
   violation: Violation;
@@ -12,47 +11,37 @@ interface ViolationDetailsProps {
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-
 const ViolationDetails: React.FC<ViolationDetailsProps> = ({ violation, onStatusChange, onClose }) => {
   const [isChecked, setIsChecked] = useState(violation.is_checked);
-  
+
   const handleCheckChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const checked = e.target.checked;
     setIsChecked(checked);
-
     try {
       const response = await fetch(
-          `${API_BASE_URL}/cars/${violation.id}/partial-update`,
-          {
-            method: 'PATCH',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ is_checked: checked }),
-          }
+        `${API_BASE_URL}/cars/${violation.id}/partial-update`,
+        {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ is_checked: checked }),
+        }
       );
-
-      if (!response.ok) {
-        throw new Error('Failed to update status');
-      }
-
-    onStatusChange(violation.id, checked);
+      if (!response.ok) throw new Error('Failed to update status');
+      onStatusChange(violation.id, checked);
     } catch (error) {
       console.error('Error updating status:', error);
       setIsChecked(!checked);
     }
   };
-  
-  // Get speed level classification for styling
+
   const getSpeedLevelClass = (speed: number) => {
-    if (speed >= 120) return 'text-red-500';
-    if (speed >= 100) return 'text-orange-500';
-    return 'text-yellow-500';
+    if (speed >= 120) return 'text-red-400';
+    if (speed >= 100) return 'text-orange-400';
+    return 'text-yellow-400';
   };
 
-  // Format date string for readability
   const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleString('en-US', {
+    return new Date(dateStr).toLocaleString('ko-KR', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
@@ -61,118 +50,116 @@ const ViolationDetails: React.FC<ViolationDetailsProps> = ({ violation, onStatus
     });
   };
 
+  const dangerLevel = getDangerLevel(violation.car_speed);
+
   return (
-    <div className="p-4 h-full overflow-y-auto">
+    <div className="p-5 h-full overflow-y-auto bg-[#06080f]">
+      {/* Header */}
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-bold text-white">Violation Details</h2>
-        <div className="flex space-x-2">
-          <button 
-            onClick={onClose}
-            className="p-2 rounded-full bg-gray-800 hover:bg-gray-700 transition-colors"
-            aria-label="Close details"
-          >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
+        <h2 className="text-lg font-bold text-white">위반 상세</h2>
+        <button
+          onClick={onClose}
+          className="p-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 transition-all"
+        >
+          <X className="h-4 w-4 text-gray-400" />
+        </button>
       </div>
-      
-      <div className="mb-4 rounded-lg overflow-hidden h-48">
-        <img 
+
+      {/* Image */}
+      <div className="mb-5 rounded-2xl overflow-hidden h-44 border border-white/5">
+        <img
           src={violation.image_url}
           alt={`Vehicle ${violation.car_number}`}
           className="w-full h-full object-cover"
         />
       </div>
-      
-      <div className="space-y-6">
-        <div className="bg-gray-800/50 rounded-xl p-5 border border-gray-700">
-          <h3 className="text-lg font-semibold mb-2 text-white">License Plate</h3>
-          <div className="bg-gray-900 p-4 rounded-md text-center">
-            <span className="text-xl font-bold">{violation.car_number}</span>
+
+      <div className="space-y-4">
+        {/* License Plate */}
+        <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-4">
+          <p className="text-[11px] text-gray-500 uppercase tracking-wider mb-2">번호판</p>
+          <div className="bg-white/5 p-3 rounded-xl text-center">
+            <span className="text-xl font-bold text-white tracking-wider">{violation.car_number}</span>
           </div>
         </div>
-        
-        <div className="bg-gray-800/50 rounded-xl p-5 border border-gray-700">
-          <h3 className="text-lg font-semibold mb-2 text-white">Detected Speed</h3>
-          <div className="bg-gray-900 p-4 rounded-md text-center">
+
+        {/* Speed */}
+        <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-4">
+          <p className="text-[11px] text-gray-500 uppercase tracking-wider mb-2">감지 속도</p>
+          <div className="bg-white/5 p-3 rounded-xl text-center">
             <span className={`text-3xl font-bold ${getSpeedLevelClass(violation.car_speed)}`}>
-              {violation.car_speed} km/h
+              {violation.car_speed}
             </span>
+            <span className="text-sm text-gray-500 ml-1">km/h</span>
           </div>
         </div>
-        
-        <div className="flex justify-between items-center bg-gray-800/50 rounded-xl p-5 border border-gray-700">
-          <label htmlFor="checkStatus" className="text-white font-medium">Mark as checked</label>
-          <div className="relative inline-block w-10 align-middle select-none">
-            <input 
-              type="checkbox" 
-              id="checkStatus" 
+
+        {/* Check toggle */}
+        <div className="flex justify-between items-center rounded-2xl border border-white/5 bg-white/[0.02] p-4">
+          <span className="text-sm text-white">확인 처리</span>
+          <label className="relative inline-flex items-center cursor-pointer">
+            <input
+              type="checkbox"
               checked={isChecked}
               onChange={handleCheckChange}
-              className="opacity-0 absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"
+              className="sr-only peer"
             />
-            <label 
-              htmlFor="checkStatus" 
-              className={`block overflow-hidden h-6 rounded-full cursor-pointer ${
-                isChecked ? 'bg-green-500' : 'bg-gray-600'
-              } transition-colors duration-200`}
-            >
-              <span 
-                className={`block h-6 w-6 rounded-full bg-white transform transition-transform duration-200 ease-in-out ${
-                  isChecked ? 'translate-x-4' : 'translate-x-0'
-                }`} 
-              />
-            </label>
-          </div>
+            <div className="w-10 h-5 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-5 after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-gray-400 after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-cyan-500/30 peer-checked:after:bg-cyan-400" />
+          </label>
         </div>
-        
-        <div className="bg-gray-800/50 rounded-xl p-5 border border-gray-700">
-          <h3 className="text-lg font-semibold mb-2 text-white">Fine Amount (KRW)</h3>
-          <div className="bg-gray-900 p-4 rounded-md text-center">
-            <span className="text-3xl font-bold text-white">{violation.fineAmount?.toLocaleString()}</span>
+
+        {/* Fine */}
+        {violation.fineAmount && (
+          <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-4">
+            <p className="text-[11px] text-gray-500 uppercase tracking-wider mb-2">벌금</p>
+            <div className="bg-white/5 p-3 rounded-xl text-center">
+              <span className="text-2xl font-bold text-white">{violation.fineAmount.toLocaleString()}</span>
+              <span className="text-sm text-gray-500 ml-1">원</span>
+            </div>
           </div>
-        </div>
-        
+        )}
+
+        {/* Info grid */}
         <div className="grid grid-cols-2 gap-3">
-          <div className="bg-gray-800/50 rounded-xl p-5 border border-gray-700 flex items-start space-x-3">
-            <MapPin className="w-4 h-4 text-blue-400 mt-0.5" />
-            <div>
-              <h3 className="text-xs font-medium text-gray-400">Location</h3>
-              <p className="text-white">{violation.location || 'Seoul'}</p>
+          <div className="rounded-xl border border-white/5 bg-white/[0.02] p-3.5">
+            <div className="flex items-center gap-2 mb-1.5">
+              <MapPin className="w-3.5 h-3.5 text-cyan-400" />
+              <span className="text-[10px] text-gray-500 uppercase">위치</span>
             </div>
+            <p className="text-sm text-white">{violation.location || 'Seoul'}</p>
           </div>
 
-          <div className="bg-gray-800/50 rounded-xl p-5 border border-gray-700 flex items-start space-x-3">
-            <AlertCircle className="w-4 h-4 text-red-400 mt-0.5" />
-            <div>
-              <h3 className="text-xs font-medium text-gray-400">Risk Level</h3>
-              <p className={`font-medium ${
-                  getDangerLevel(violation.car_speed) === 'High' ? 'text-red-400' :
-                      getDangerLevel(violation.car_speed) === 'Medium' ? 'text-orange-400' : 'text-yellow-400'
-              }`}>
-                {getDangerLevel(violation.car_speed)}
-              </p>
+          <div className="rounded-xl border border-white/5 bg-white/[0.02] p-3.5">
+            <div className="flex items-center gap-2 mb-1.5">
+              <AlertCircle className="w-3.5 h-3.5 text-cyan-400" />
+              <span className="text-[10px] text-gray-500 uppercase">위험도</span>
             </div>
+            <p className={`text-sm font-medium ${
+              dangerLevel === 'High' ? 'text-red-400' :
+              dangerLevel === 'Medium' ? 'text-orange-400' : 'text-yellow-400'
+            }`}>
+              {dangerLevel}
+            </p>
           </div>
 
-          <div className="bg-gray-800/50 rounded-xl p-5 border border-gray-700 flex items-start space-x-3">
-            <CalendarDays className="w-4 h-4 text-purple-400 mt-0.5" />
-            <div>
-              <h3 className="text-xs font-medium text-gray-400">Created At</h3>
-              <p className="text-white">
-                {violation.created_at ? formatDate(violation.created_at) : '알 수 없음'}
-              </p>
+          <div className="rounded-xl border border-white/5 bg-white/[0.02] p-3.5">
+            <div className="flex items-center gap-2 mb-1.5">
+              <CalendarDays className="w-3.5 h-3.5 text-cyan-400" />
+              <span className="text-[10px] text-gray-500 uppercase">감지 시간</span>
             </div>
+            <p className="text-xs text-white">
+              {violation.created_at ? formatDate(violation.created_at) : '-'}
+            </p>
           </div>
 
-          <div className="bg-gray-800/50 rounded-xl p-5 border border-gray-700 flex items-start space-x-3">
-            <CalendarDays className="w-4 h-4 text-blue-400 mt-0.5" />
-            <div>
-              <h3 className="text-xs font-medium text-gray-400">Last Updated</h3>
-              <p className="text-white">
-                {violation.updated_at ? formatDate(violation.updated_at) : '알 수 없음'}
-              </p>
+          <div className="rounded-xl border border-white/5 bg-white/[0.02] p-3.5">
+            <div className="flex items-center gap-2 mb-1.5">
+              <Gauge className="w-3.5 h-3.5 text-cyan-400" />
+              <span className="text-[10px] text-gray-500 uppercase">차선</span>
             </div>
+            <p className="text-sm text-white">
+              {violation.lane ? `${violation.lane}차선` : '-'}
+            </p>
           </div>
         </div>
       </div>

@@ -4,7 +4,7 @@ import Header from "./components/Header";
 import Dashboard from "./components/Dashboard";
 import ViolationDetails from "./components/ViolationDetails";
 import LandingPage from "./components/LandingPage";
-import { Violation } from "./types";
+import { Violation, StatsData } from "./types";
 import Swal from "sweetalert2";
 import VehicleHistory from "./components/VehicleHistory";
 import { onMessage } from "firebase/messaging";
@@ -24,6 +24,12 @@ function DashboardPage() {
   const [showVehicleHistory, setShowVehicleHistory] = useState(false);
   const [vehicleViolations, setVehicleViolations] = useState<Violation[]>([]);
   const [searchPlateNumber, setSearchPlateNumber] = useState("");
+  const [stats, setStats] = useState<StatsData>({
+    totalViolations: 0,
+    checked: 0,
+    pendingReview: 0,
+    avgSpeed: 0,
+  });
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
   // /detections/ GET 에서 데이터 불러오기
@@ -38,6 +44,21 @@ function DashboardPage() {
       .catch((err) => {
         console.error("API fetch error:", err);
         setLoading(false);
+      });
+
+    // 통계 데이터 서버에서 가져오기
+    fetch(`${API_BASE_URL}/detections/statistics/`)
+      .then((res) => res.json())
+      .then((data) => {
+        setStats({
+          totalViolations: data.total_detections ?? 0,
+          checked: data.completed_count ?? 0,
+          pendingReview: data.pending_count ?? 0,
+          avgSpeed: Math.round(data.avg_speed ?? 0),
+        });
+      })
+      .catch((err) => {
+        console.error("Statistics fetch error:", err);
       });
 
     // 🔔 푸시 알림 등록
@@ -145,16 +166,6 @@ function DashboardPage() {
     }
     return 0;
   });
-
-  // Calculate statistics
-  const stats = {
-    totalViolations: violations.length,
-    checked: violations.filter((v) => v.status === 'completed').length,
-    pendingReview: violations.filter((v) => v.status !== 'completed').length,
-    avgSpeed: Math.round(
-      violations.reduce((sum, v) => sum + v.detected_speed, 0) / violations.length
-    ),
-  };
 
   return (
     <>

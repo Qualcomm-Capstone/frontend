@@ -10,6 +10,8 @@
 | 기능명 | Method | Endpoint | 파일 | 비고 |
 |--------|--------|----------|------|------|
 | 감지 목록 조회 | GET | `/detections/` | `App.tsx` | 정상 동작 |
+| 감지 통계 | GET | `/detections/statistics/` | `App.tsx` | 정상 동작 (대시보드 통계 카드) |
+| 알림 이력 조회 | GET | `/notifications/` | `NotificationCenter.tsx` | 정상 동작 (서버 알림 이력 + 실시간 FCM) |
 | 감지 삭제 | DELETE | `/detections/{id}/` | `App.tsx` | 백엔드 미지원 (ReadOnly) |
 | 감지 상태 업데이트 | PATCH | `/detections/{id}/` | `ViolationDetails.tsx` | 백엔드 미지원 (ReadOnly) |
 | FCM 토큰 등록 | POST | `/vehicles/register-fcm/` | `FCMNotification.tsx` | `plate_number` 필수 문제 |
@@ -22,14 +24,14 @@
 |--------|--------|----------|------|
 | 감지 상세 조회 | GET | `/detections/{id}/` | 상세 페이지에서 서버 최신 데이터 조회 |
 | 대기중 감지 목록 | GET | `/detections/pending/` | 처리 대기 목록 필터링 |
-| 감지 통계 | GET | `/detections/statistics/?period=today\|week\|month` | 대시보드 통계 카드 |
+| ~~감지 통계~~ | ~~GET~~ | ~~`/detections/statistics/`~~ | ~~연동 완료~~ |
 | 차량 목록 조회 | GET | `/vehicles/` | 차량 관리 페이지 |
 | 차량 등록 | POST | `/vehicles/` | 차량 신규 등록 |
 | 차량 상세 조회 | GET | `/vehicles/{id}/` | 차량 상세 정보 |
 | 차량 수정 | PUT/PATCH | `/vehicles/{id}/` | 차량 정보 수정 |
 | 차량 삭제 | DELETE | `/vehicles/{id}/` | 차량 정보 삭제 |
 | FCM 토큰 업데이트 | PATCH | `/vehicles/{id}/fcm-token/` | 특정 차량 FCM 토큰 갱신 |
-| 알림 목록 조회 | GET | `/notifications/` | 알림 내역 페이지 |
+| ~~알림 목록 조회~~ | ~~GET~~ | ~~`/notifications/`~~ | ~~연동 완료~~ |
 | 알림 상세 조회 | GET | `/notifications/{id}/` | 알림 상세 확인 |
 
 ---

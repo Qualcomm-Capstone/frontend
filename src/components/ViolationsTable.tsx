@@ -1,11 +1,10 @@
 import React from 'react';
-import { Eye, Trash2 } from 'lucide-react';
+import { Eye } from 'lucide-react';
 import { Violation } from '../types';
 
 interface ViolationsTableProps {
   violations: Violation[];
   onSelectViolation: (violation: Violation) => void;
-  onDeleteViolation: (id: number) => void;
   selectedViolationId?: number;
 }
 
@@ -22,7 +21,6 @@ const formatDate = (dateString: string) => {
 const ViolationsTable: React.FC<ViolationsTableProps> = ({
   violations,
   onSelectViolation,
-  onDeleteViolation,
   selectedViolationId
 }) => {
   const getSpeedBadge = (speed: number) => {
@@ -108,26 +106,15 @@ const ViolationsTable: React.FC<ViolationsTableProps> = ({
                   {formatDate(violation.detected_at)}
                 </td>
                 <td className="px-5 py-3.5 text-right">
-                  <div className="flex items-center justify-end gap-1">
-                    <button
-                      className="p-1.5 text-gray-500 hover:text-cyan-400 rounded-lg hover:bg-cyan-500/10 transition-all"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onSelectViolation(violation);
-                      }}
-                    >
-                      <Eye size={14} />
-                    </button>
-                    <button
-                      className="p-1.5 text-gray-500 hover:text-red-400 rounded-lg hover:bg-red-500/10 transition-all"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onDeleteViolation(violation.id);
-                      }}
-                    >
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
+                  <button
+                    className="p-1.5 text-gray-500 hover:text-cyan-400 rounded-lg hover:bg-cyan-500/10 transition-all"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onSelectViolation(violation);
+                    }}
+                  >
+                    <Eye size={14} />
+                  </button>
                 </td>
               </tr>
             );

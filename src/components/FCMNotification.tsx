@@ -25,7 +25,7 @@ const FCMNotification = () => {
             console.log("FCM 토큰:", currentToken);
 
             // 3. 백엔드에 토큰 등록
-            // TODO: register-fcm은 plate_number도 필요. 대시보드용 FCM 등록 엔드포인트가 별도로 필요할 수 있음.
+            // 대시보드 FCM 등록: plate_number="DASHBOARD"로 등록하면 서버에서 자동으로 dashboard_alerts 토픽에 구독됨
             try {
               await axios.post(`${API_BASE_URL}/vehicles/register-fcm/`, {
                 fcm_token: currentToken,

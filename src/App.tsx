@@ -7,9 +7,6 @@ import LandingPage from "./components/LandingPage";
 import { Violation, StatsData } from "./types";
 import Swal from "sweetalert2";
 import VehicleHistory from "./components/VehicleHistory";
-import { onMessage } from "firebase/messaging";
-import { registerFCM } from "./registerFCM";
-import { messaging } from "./firebase";
 import FCMNotification from "./components/FCMNotification";
 import NotificationCenter from "./components/NotificationCenter";
 
@@ -61,14 +58,6 @@ function DashboardPage() {
         console.error("Statistics fetch error:", err);
       });
 
-    // 🔔 푸시 알림 등록
-    registerFCM()
-      .then((token) => {
-        console.log("FCM Token:", token);
-      })
-      .catch((err) => {
-        console.error("FCM registration failed:", err);
-      });
   }, []);
 
   const handleViolationSelect = (violation: Violation) => {

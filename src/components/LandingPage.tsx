@@ -21,10 +21,21 @@ function LandingPage() {
   const heroRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const handleScroll = () => setScrollY(window.scrollY);
+    const handleScroll = () => {
+      const y = window.scrollY;
+      setScrollY(y);
+      if (y > 600) setIs3DMode(false);
+    };
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  useEffect(() => {
+    document.body.style.overflow = is3DMode ? 'hidden' : '';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [is3DMode]);
 
   const heroOpacity = Math.max(0, 1 - scrollY / 600);
   const heroScale = 1 + scrollY * 0.0003;
@@ -40,7 +51,13 @@ function LandingPage() {
               : ""
           }`}
         >
-          <div className="flex items-center gap-3">
+          <div
+            className="flex items-center gap-3 cursor-pointer"
+            onClick={() => {
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+              setIs3DMode(false);
+            }}
+          >
             <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center">
               <Radar className="w-5 h-5 text-white" />
             </div>
@@ -143,9 +160,11 @@ function LandingPage() {
         <button
           onClick={() => setIs3DMode(!is3DMode)}
           className={`fixed bottom-8 right-8 z-50 flex items-center gap-2 px-5 py-3 rounded-full text-sm font-medium transition-all duration-500 shadow-2xl ${
-            is3DMode
-              ? "bg-cyan-500 text-white shadow-cyan-500/30"
-              : "bg-white/10 backdrop-blur-md text-white border border-white/15 hover:bg-white/20"
+            scrollY > 600
+              ? "opacity-0 pointer-events-none"
+              : is3DMode
+                ? "bg-cyan-500 text-white shadow-cyan-500/30"
+                : "bg-white/10 backdrop-blur-md text-white border border-white/15 hover:bg-white/20"
           }`}
         >
           <MousePointer className="w-4 h-4" />

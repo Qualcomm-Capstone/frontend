@@ -3,7 +3,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 
 interface LaneViolationChartProps {
   laneData: {
-    lane: number;
+    lane: string;
     count: number;
     avgSpeed: number;
   }[];
@@ -13,7 +13,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload?.length) return null;
   return (
     <div className="bg-[#0c0e16] border border-white/10 rounded-xl px-4 py-3 shadow-xl">
-      <p className="text-xs text-gray-400 mb-1">{label}차선</p>
+      <p className="text-xs text-gray-400 mb-1">카메라 {label}</p>
       <p className="text-sm font-semibold text-cyan-400">{payload[0].value}건</p>
     </div>
   );
@@ -22,7 +22,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 const LaneViolationChart: React.FC<LaneViolationChartProps> = ({ laneData }) => {
   return (
     <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-5">
-      <h3 className="text-sm font-semibold text-white mb-5">차선별 위반 현황</h3>
+      <h3 className="text-sm font-semibold text-white mb-5">카메라별 위반 현황</h3>
       <div className="h-[200px]">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={laneData} margin={{ top: 5, right: 10, left: -15, bottom: 0 }}>
@@ -33,7 +33,6 @@ const LaneViolationChart: React.FC<LaneViolationChartProps> = ({ laneData }) => 
               tick={{ fill: '#6b7280', fontSize: 11 }}
               axisLine={false}
               tickLine={false}
-              tickFormatter={(v) => `${v}차선`}
             />
             <YAxis
               stroke="rgba(255,255,255,0.15)"

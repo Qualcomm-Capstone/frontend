@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Violation } from '../types';
 import { CalendarDays, MapPin, AlertCircle, X, Gauge } from 'lucide-react';
-import { getDangerLevel } from '../utils/helpers';
+import { getDangerLevel, calculateFine } from '../utils/helpers';
 
 interface ViolationDetailsProps {
   violation: Violation;
@@ -12,18 +12,19 @@ interface ViolationDetailsProps {
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const ViolationDetails: React.FC<ViolationDetailsProps> = ({ violation, onStatusChange, onClose }) => {
-  const [isChecked, setIsChecked] = useState(violation.is_checked);
+  const [isChecked, setIsChecked] = useState(violation.status === 'completed');
 
   const handleCheckChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const checked = e.target.checked;
     setIsChecked(checked);
     try {
+      // TODO: 백엔드 DetectionViewSet이 ReadOnly라 PATCH 미지원. 백엔드에 status 업데이트 엔드포인트 추가 필요.
       const response = await fetch(
-        `${API_BASE_URL}/cars/${violation.id}/partial-update`,
+        `${API_BASE_URL}/detections/${violation.id}/`,
         {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ is_checked: checked }),
+          body: JSON.stringify({ status: checked ? 'completed' : 'pending' }),
         }
       );
       if (!response.ok) throw new Error('Failed to update status');
@@ -50,7 +51,8 @@ const ViolationDetails: React.FC<ViolationDetailsProps> = ({ violation, onStatus
     });
   };
 
-  const dangerLevel = getDangerLevel(violation.car_speed);
+  const dangerLevel = getDangerLevel(violation.detected_speed, violation.speed_limit);
+  const fineAmount = calculateFine(violation.detected_speed, violation.speed_limit);
 
   return (
     <div className="p-5 h-full overflow-y-auto bg-[#06080f]">
@@ -68,8 +70,8 @@ const ViolationDetails: React.FC<ViolationDetailsProps> = ({ violation, onStatus
       {/* Image */}
       <div className="mb-5 rounded-2xl overflow-hidden h-44 border border-white/5">
         <img
-          src={violation.image_url}
-          alt={`Vehicle ${violation.car_number}`}
+          src={violation.image_gcs_uri}
+          alt={`Vehicle ${violation.ocr_result}`}
           className="w-full h-full object-cover"
         />
       </div>
@@ -79,7 +81,7 @@ const ViolationDetails: React.FC<ViolationDetailsProps> = ({ violation, onStatus
         <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-4">
           <p className="text-[11px] text-gray-500 uppercase tracking-wider mb-2">번호판</p>
           <div className="bg-white/5 p-3 rounded-xl text-center">
-            <span className="text-xl font-bold text-white tracking-wider">{violation.car_number}</span>
+            <span className="text-xl font-bold text-white tracking-wider">{violation.ocr_result}</span>
           </div>
         </div>
 
@@ -87,8 +89,8 @@ const ViolationDetails: React.FC<ViolationDetailsProps> = ({ violation, onStatus
         <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-4">
           <p className="text-[11px] text-gray-500 uppercase tracking-wider mb-2">감지 속도</p>
           <div className="bg-white/5 p-3 rounded-xl text-center">
-            <span className={`text-3xl font-bold ${getSpeedLevelClass(violation.car_speed)}`}>
-              {violation.car_speed}
+            <span className={`text-3xl font-bold ${getSpeedLevelClass(violation.detected_speed)}`}>
+              {violation.detected_speed}
             </span>
             <span className="text-sm text-gray-500 ml-1">km/h</span>
           </div>
@@ -109,11 +111,11 @@ const ViolationDetails: React.FC<ViolationDetailsProps> = ({ violation, onStatus
         </div>
 
         {/* Fine */}
-        {violation.fineAmount && (
+        {fineAmount > 0 && (
           <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-4">
             <p className="text-[11px] text-gray-500 uppercase tracking-wider mb-2">벌금</p>
             <div className="bg-white/5 p-3 rounded-xl text-center">
-              <span className="text-2xl font-bold text-white">{violation.fineAmount.toLocaleString()}</span>
+              <span className="text-2xl font-bold text-white">{fineAmount.toLocaleString()}</span>
               <span className="text-sm text-gray-500 ml-1">원</span>
             </div>
           </div>
@@ -148,17 +150,17 @@ const ViolationDetails: React.FC<ViolationDetailsProps> = ({ violation, onStatus
               <span className="text-[10px] text-gray-500 uppercase">감지 시간</span>
             </div>
             <p className="text-xs text-white">
-              {violation.created_at ? formatDate(violation.created_at) : '-'}
+              {violation.detected_at ? formatDate(violation.detected_at) : '-'}
             </p>
           </div>
 
           <div className="rounded-xl border border-white/5 bg-white/[0.02] p-3.5">
             <div className="flex items-center gap-2 mb-1.5">
               <Gauge className="w-3.5 h-3.5 text-cyan-400" />
-              <span className="text-[10px] text-gray-500 uppercase">차선</span>
+              <span className="text-[10px] text-gray-500 uppercase">제한 속도</span>
             </div>
             <p className="text-sm text-white">
-              {violation.lane ? `${violation.lane}차선` : '-'}
+              {violation.speed_limit} km/h
             </p>
           </div>
         </div>

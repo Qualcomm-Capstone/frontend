@@ -1,6 +1,6 @@
 import React from 'react';
 import { Violation } from '../types';
-import { formatDate } from '../utils/helpers';
+import { formatDate, calculateFine } from '../utils/helpers';
 import { Car, Calendar, MapPin, X } from 'lucide-react';
 
 interface VehicleHistoryProps {
@@ -10,9 +10,9 @@ interface VehicleHistoryProps {
 }
 
 const VehicleHistory: React.FC<VehicleHistoryProps> = ({ violations, plateNumber, onClose }) => {
-  const totalFines = violations.reduce((sum, v) => sum + (v.fineAmount || 0), 0);
+  const totalFines = violations.reduce((sum, v) => sum + calculateFine(v.detected_speed, v.speed_limit), 0);
   const avgSpeed = violations.length > 0
-    ? Math.round(violations.reduce((sum, v) => sum + v.car_speed, 0) / violations.length)
+    ? Math.round(violations.reduce((sum, v) => sum + v.detected_speed, 0) / violations.length)
     : 0;
 
   return (
@@ -56,15 +56,15 @@ const VehicleHistory: React.FC<VehicleHistoryProps> = ({ violations, plateNumber
             <div className="flex items-center gap-4">
               <div className="w-16 h-16 rounded-xl overflow-hidden border border-white/10 flex-shrink-0">
                 <img
-                  src={violation.image_url}
-                  alt={`Vehicle ${violation.car_number}`}
+                  src={violation.image_gcs_uri}
+                  alt={`Vehicle ${violation.ocr_result}`}
                   className="w-full h-full object-cover"
                 />
               </div>
               <div className="space-y-1">
                 <div className="flex items-center gap-2 text-sm text-gray-400">
                   <Calendar className="w-3.5 h-3.5" />
-                  <span>{formatDate(new Date(violation.created_at))}</span>
+                  <span>{formatDate(new Date(violation.detected_at))}</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-gray-400">
                   <MapPin className="w-3.5 h-3.5" />
@@ -76,28 +76,28 @@ const VehicleHistory: React.FC<VehicleHistoryProps> = ({ violations, plateNumber
               <div>
                 <div className="text-[10px] text-gray-500 uppercase mb-0.5">속도</div>
                 <div className={`text-lg font-bold ${
-                  violation.car_speed >= 120 ? 'text-red-400' :
-                  violation.car_speed >= 100 ? 'text-orange-400' :
+                  violation.detected_speed >= 120 ? 'text-red-400' :
+                  violation.detected_speed >= 100 ? 'text-orange-400' :
                   'text-yellow-400'
                 }`}>
-                  {violation.car_speed} km/h
+                  {violation.detected_speed} km/h
                 </div>
               </div>
               <div>
                 <div className="text-[10px] text-gray-500 uppercase mb-0.5">벌금</div>
                 <div className="text-lg font-bold text-white">
-                  {violation.fineAmount?.toLocaleString() || 0}원
+                  {calculateFine(violation.detected_speed, violation.speed_limit).toLocaleString()}원
                 </div>
               </div>
               <div>
                 <div className="text-[10px] text-gray-500 uppercase mb-0.5">상태</div>
                 <span className={`inline-flex items-center gap-1.5 text-xs ${
-                  violation.is_checked ? 'text-cyan-400' : 'text-gray-500'
+                  violation.status === 'completed' ? 'text-cyan-400' : 'text-gray-500'
                 }`}>
                   <span className={`w-1.5 h-1.5 rounded-full ${
-                    violation.is_checked ? 'bg-cyan-400' : 'bg-gray-600'
+                    violation.status === 'completed' ? 'bg-cyan-400' : 'bg-gray-600'
                   }`} />
-                  {violation.is_checked ? '확인됨' : '미확인'}
+                  {violation.status === 'completed' ? '확인됨' : '미확인'}
                 </span>
               </div>
             </div>

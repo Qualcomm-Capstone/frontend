@@ -26,10 +26,10 @@ function DashboardPage() {
   const [searchPlateNumber, setSearchPlateNumber] = useState("");
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-  // /cars/ get 에서 데이터 불러오기
+  // /detections/ GET 에서 데이터 불러오기
   useEffect(() => {
     setLoading(true);
-    fetch(`${API_BASE_URL}/cars`)
+    fetch(`${API_BASE_URL}/detections/`)
       .then((res) => res.json())
       .then((data) => {
         setViolations(data.results);
@@ -63,14 +63,14 @@ function DashboardPage() {
     setViolations(
       violations.map((violation) => {
         if (violation.id === id) {
-          return { ...violation, is_checked: checked };
+          return { ...violation, status: checked ? 'completed' as const : 'pending' as const };
         }
         return violation;
       })
     );
 
     if (selectedViolation && selectedViolation.id === id) {
-      setSelectedViolation({ ...selectedViolation, is_checked: checked });
+      setSelectedViolation({ ...selectedViolation, status: checked ? 'completed' as const : 'pending' as const });
     }
   };
 
@@ -88,7 +88,8 @@ function DashboardPage() {
     });
     if (result.isConfirmed) {
       try {
-        const response = await fetch(`${API_BASE_URL}/cars/${id}`, {
+        // TODO: 백엔드 DetectionViewSet이 ReadOnly라 DELETE 미지원. 백엔드에 DELETE 추가 필요.
+        const response = await fetch(`${API_BASE_URL}/detections/${id}/`, {
           method: "DELETE",
         });
         if (!response.ok) throw new Error("삭제 실패");
@@ -107,7 +108,7 @@ function DashboardPage() {
   const handleSearchVehicle = () => {
     if (!searchPlateNumber) return;
 
-    const result = violations.filter((v) => v.car_number === searchPlateNumber);
+    const result = violations.filter((v) => v.ocr_result === searchPlateNumber);
     setVehicleViolations(result);
     setShowVehicleHistory(true);
   };
@@ -123,8 +124,8 @@ function DashboardPage() {
 
   const filteredViolations = violations.filter((violation) => {
     if (filterType === "All Violations") return true;
-    if (filterType === "Checked") return violation.is_checked;
-    if (filterType === "Unchecked") return !violation.is_checked;
+    if (filterType === "Checked") return violation.status === 'completed';
+    if (filterType === "Unchecked") return violation.status !== 'completed';
     return true;
   });
 
@@ -138,9 +139,9 @@ function DashboardPage() {
         new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
       );
     } else if (sortOrder === "Highest speed") {
-      return b.car_speed - a.car_speed;
+      return b.detected_speed - a.detected_speed;
     } else if (sortOrder === "Lowest speed") {
-      return a.car_speed - b.car_speed;
+      return a.detected_speed - b.detected_speed;
     }
     return 0;
   });
@@ -148,10 +149,10 @@ function DashboardPage() {
   // Calculate statistics
   const stats = {
     totalViolations: violations.length,
-    checked: violations.filter((v) => v.is_checked).length,
-    pendingReview: violations.filter((v) => !v.is_checked).length,
+    checked: violations.filter((v) => v.status === 'completed').length,
+    pendingReview: violations.filter((v) => v.status !== 'completed').length,
     avgSpeed: Math.round(
-      violations.reduce((sum, v) => sum + v.car_speed, 0) / violations.length
+      violations.reduce((sum, v) => sum + v.detected_speed, 0) / violations.length
     ),
   };
 

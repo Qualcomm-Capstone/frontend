@@ -29,8 +29,8 @@ const NotificationCenter: React.FC = () => {
         type: 'violation',
         timestamp: new Date(data.timestamp || Date.now()).toLocaleString(),
         read: false,
-        plateNumber: data.car_number || '미확인 차량',
-        speed: Number(data.car_speed) || 0,
+        plateNumber: data.ocr_result || '미확인 차량',
+        speed: Number(data.detected_speed) || 0,
         location: data.location || 'Seoul',
       };
       setNotifications(prev => [newNotification, ...prev]);

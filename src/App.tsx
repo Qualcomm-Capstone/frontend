@@ -4,7 +4,7 @@ import Header from "./components/Header";
 import Dashboard from "./components/Dashboard";
 import ViolationDetails from "./components/ViolationDetails";
 import LandingPage from "./components/LandingPage";
-import { Violation } from "./types";
+import { Violation, StatsData } from "./types";
 import Swal from "sweetalert2";
 import VehicleHistory from "./components/VehicleHistory";
 import { onMessage } from "firebase/messaging";
@@ -24,12 +24,18 @@ function DashboardPage() {
   const [showVehicleHistory, setShowVehicleHistory] = useState(false);
   const [vehicleViolations, setVehicleViolations] = useState<Violation[]>([]);
   const [searchPlateNumber, setSearchPlateNumber] = useState("");
+  const [stats, setStats] = useState<StatsData>({
+    totalViolations: 0,
+    checked: 0,
+    pendingReview: 0,
+    avgSpeed: 0,
+  });
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-  // /cars/ get 에서 데이터 불러오기
+  // /detections/ GET 에서 데이터 불러오기
   useEffect(() => {
     setLoading(true);
-    fetch(`${API_BASE_URL}/cars`)
+    fetch(`${API_BASE_URL}/detections/`)
       .then((res) => res.json())
       .then((data) => {
         setViolations(data.results);
@@ -38,6 +44,21 @@ function DashboardPage() {
       .catch((err) => {
         console.error("API fetch error:", err);
         setLoading(false);
+      });
+
+    // 통계 데이터 서버에서 가져오기
+    fetch(`${API_BASE_URL}/detections/statistics/`)
+      .then((res) => res.json())
+      .then((data) => {
+        setStats({
+          totalViolations: data.total_detections ?? 0,
+          checked: data.completed_count ?? 0,
+          pendingReview: data.pending_count ?? 0,
+          avgSpeed: Math.round(data.avg_speed ?? 0),
+        });
+      })
+      .catch((err) => {
+        console.error("Statistics fetch error:", err);
       });
 
     // 🔔 푸시 알림 등록
@@ -63,14 +84,14 @@ function DashboardPage() {
     setViolations(
       violations.map((violation) => {
         if (violation.id === id) {
-          return { ...violation, is_checked: checked };
+          return { ...violation, status: checked ? 'completed' as const : 'pending' as const };
         }
         return violation;
       })
     );
 
     if (selectedViolation && selectedViolation.id === id) {
-      setSelectedViolation({ ...selectedViolation, is_checked: checked });
+      setSelectedViolation({ ...selectedViolation, status: checked ? 'completed' as const : 'pending' as const });
     }
   };
 
@@ -88,7 +109,8 @@ function DashboardPage() {
     });
     if (result.isConfirmed) {
       try {
-        const response = await fetch(`${API_BASE_URL}/cars/${id}`, {
+        // TODO: 백엔드 DetectionViewSet이 ReadOnly라 DELETE 미지원. 백엔드에 DELETE 추가 필요.
+        const response = await fetch(`${API_BASE_URL}/detections/${id}/`, {
           method: "DELETE",
         });
         if (!response.ok) throw new Error("삭제 실패");
@@ -107,7 +129,7 @@ function DashboardPage() {
   const handleSearchVehicle = () => {
     if (!searchPlateNumber) return;
 
-    const result = violations.filter((v) => v.car_number === searchPlateNumber);
+    const result = violations.filter((v) => v.ocr_result === searchPlateNumber);
     setVehicleViolations(result);
     setShowVehicleHistory(true);
   };
@@ -123,8 +145,8 @@ function DashboardPage() {
 
   const filteredViolations = violations.filter((violation) => {
     if (filterType === "All Violations") return true;
-    if (filterType === "Checked") return violation.is_checked;
-    if (filterType === "Unchecked") return !violation.is_checked;
+    if (filterType === "Checked") return violation.status === 'completed';
+    if (filterType === "Unchecked") return violation.status !== 'completed';
     return true;
   });
 
@@ -138,22 +160,12 @@ function DashboardPage() {
         new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
       );
     } else if (sortOrder === "Highest speed") {
-      return b.car_speed - a.car_speed;
+      return b.detected_speed - a.detected_speed;
     } else if (sortOrder === "Lowest speed") {
-      return a.car_speed - b.car_speed;
+      return a.detected_speed - b.detected_speed;
     }
     return 0;
   });
-
-  // Calculate statistics
-  const stats = {
-    totalViolations: violations.length,
-    checked: violations.filter((v) => v.is_checked).length,
-    pendingReview: violations.filter((v) => !v.is_checked).length,
-    avgSpeed: Math.round(
-      violations.reduce((sum, v) => sum + v.car_speed, 0) / violations.length
-    ),
-  };
 
   return (
     <>

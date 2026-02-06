@@ -42,11 +42,11 @@ const TrendChart: React.FC<TrendChartProps> = ({ violations }) => {
       date.setDate(date.getDate() - i);
       const dateStr = date.toISOString().split('T')[0];
       const dayViolations = violations.filter(v => {
-        if (!v.created_at) return false;
-        return v.created_at.split('T')[0] === dateStr;
+        if (!v.detected_at) return false;
+        return v.detected_at.split('T')[0] === dateStr;
       });
       const avgSpeed = dayViolations.length > 0
-        ? Math.round(dayViolations.reduce((s, v) => s + v.car_speed, 0) / dayViolations.length)
+        ? Math.round(dayViolations.reduce((s, v) => s + v.detected_speed, 0) / dayViolations.length)
         : 0;
 
       result.push({
@@ -69,12 +69,12 @@ const TrendChart: React.FC<TrendChartProps> = ({ violations }) => {
       weekEnd.setDate(weekEnd.getDate() - i * 7);
 
       const weekViolations = violations.filter(v => {
-        if (!v.created_at) return false;
-        const vDate = new Date(v.created_at);
+        if (!v.detected_at) return false;
+        const vDate = new Date(v.detected_at);
         return vDate >= weekStart && vDate <= weekEnd;
       });
       const avgSpeed = weekViolations.length > 0
-        ? Math.round(weekViolations.reduce((s, v) => s + v.car_speed, 0) / weekViolations.length)
+        ? Math.round(weekViolations.reduce((s, v) => s + v.detected_speed, 0) / weekViolations.length)
         : 0;
 
       result.push({

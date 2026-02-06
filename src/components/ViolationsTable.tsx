@@ -61,7 +61,7 @@ const ViolationsTable: React.FC<ViolationsTableProps> = ({
         </thead>
         <tbody className="divide-y divide-white/[0.03]">
           {violations.map((violation) => {
-            const speedBadge = getSpeedBadge(violation.car_speed);
+            const speedBadge = getSpeedBadge(violation.detected_speed);
             return (
               <tr
                 key={violation.id}
@@ -78,34 +78,34 @@ const ViolationsTable: React.FC<ViolationsTableProps> = ({
                 <td className="px-5 py-3.5">
                   <div className="h-10 w-14 rounded-lg overflow-hidden border border-white/10">
                     <img
-                      src={violation.image_url}
-                      alt={`Vehicle ${violation.car_number}`}
+                      src={violation.image_gcs_uri}
+                      alt={`Vehicle ${violation.ocr_result}`}
                       className="h-full w-full object-cover"
                     />
                   </div>
                 </td>
                 <td className="px-5 py-3.5 text-sm font-medium text-white">
-                  {violation.car_number}
+                  {violation.ocr_result}
                 </td>
                 <td className="px-5 py-3.5">
                   <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold border ${speedBadge.color}`}>
-                    {violation.car_speed} km/h
+                    {violation.detected_speed} km/h
                   </span>
                 </td>
                 <td className="px-5 py-3.5">
                   <span className={`inline-flex items-center gap-1.5 text-xs ${
-                    violation.is_checked
+                    violation.status === 'completed'
                       ? 'text-cyan-400'
                       : 'text-gray-500'
                   }`}>
                     <span className={`w-1.5 h-1.5 rounded-full ${
-                      violation.is_checked ? 'bg-cyan-400' : 'bg-gray-600'
+                      violation.status === 'completed' ? 'bg-cyan-400' : 'bg-gray-600'
                     }`} />
-                    {violation.is_checked ? '확인됨' : '미확인'}
+                    {violation.status === 'completed' ? '확인됨' : '미확인'}
                   </span>
                 </td>
                 <td className="px-5 py-3.5 text-sm text-gray-500">
-                  {formatDate(violation.created_at)}
+                  {formatDate(violation.detected_at)}
                 </td>
                 <td className="px-5 py-3.5 text-right">
                   <div className="flex items-center justify-end gap-1">

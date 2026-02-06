@@ -12,7 +12,6 @@ interface DashboardProps {
   violations: Violation[];
   stats: StatsData;
   onSelectViolation: (violation: Violation) => void;
-  onDeleteViolation: (id: number) => void;
   selectedViolationId?: number;
 }
 
@@ -20,7 +19,6 @@ const Dashboard: React.FC<DashboardProps> = ({
   violations,
   stats,
   onSelectViolation,
-  onDeleteViolation,
   selectedViolationId
 }) => {
   const laneData = extractLaneStats(violations);
@@ -72,7 +70,6 @@ const Dashboard: React.FC<DashboardProps> = ({
             <ViolationsTable
               violations={violations}
               onSelectViolation={onSelectViolation}
-              onDeleteViolation={onDeleteViolation}
               selectedViolationId={selectedViolationId}
             />
           </div>
@@ -84,7 +81,6 @@ const Dashboard: React.FC<DashboardProps> = ({
         <ViolationsTable
           violations={violations}
           onSelectViolation={onSelectViolation}
-          onDeleteViolation={onDeleteViolation}
           selectedViolationId={selectedViolationId}
         />
       )}

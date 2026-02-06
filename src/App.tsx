@@ -5,11 +5,7 @@ import Dashboard from "./components/Dashboard";
 import ViolationDetails from "./components/ViolationDetails";
 import LandingPage from "./components/LandingPage";
 import { Violation, StatsData } from "./types";
-import Swal from "sweetalert2";
 import VehicleHistory from "./components/VehicleHistory";
-import { onMessage } from "firebase/messaging";
-import { registerFCM } from "./registerFCM";
-import { messaging } from "./firebase";
 import FCMNotification from "./components/FCMNotification";
 import NotificationCenter from "./components/NotificationCenter";
 
@@ -61,14 +57,6 @@ function DashboardPage() {
         console.error("Statistics fetch error:", err);
       });
 
-    // 🔔 푸시 알림 등록
-    registerFCM()
-      .then((token) => {
-        console.log("FCM Token:", token);
-      })
-      .catch((err) => {
-        console.error("FCM registration failed:", err);
-      });
   }, []);
 
   const handleViolationSelect = (violation: Violation) => {
@@ -77,53 +65,6 @@ function DashboardPage() {
       setSelectedViolation(null);
     } else {
       setSelectedViolation(violation);
-    }
-  };
-
-  const handleStatusChange = (id: number, checked: boolean) => {
-    setViolations(
-      violations.map((violation) => {
-        if (violation.id === id) {
-          return { ...violation, status: checked ? 'completed' as const : 'pending' as const };
-        }
-        return violation;
-      })
-    );
-
-    if (selectedViolation && selectedViolation.id === id) {
-      setSelectedViolation({ ...selectedViolation, status: checked ? 'completed' as const : 'pending' as const });
-    }
-  };
-
-  const handleDeleteViolation = async (id: number) => {
-    //삭제 확인
-    const result = await Swal.fire({
-      title: "Are you sure you want to delete?",
-      text: "This action cannot be undone.",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
-      confirmButtonText: "Yes, delete it!",
-      cancelButtonText: "Cancel",
-    });
-    if (result.isConfirmed) {
-      try {
-        // TODO: 백엔드 DetectionViewSet이 ReadOnly라 DELETE 미지원. 백엔드에 DELETE 추가 필요.
-        const response = await fetch(`${API_BASE_URL}/detections/${id}/`, {
-          method: "DELETE",
-        });
-        if (!response.ok) throw new Error("삭제 실패");
-
-        setViolations(violations.filter((violation) => violation.id !== id));
-        if (selectedViolation && selectedViolation.id === id) {
-          setSelectedViolation(null);
-        }
-        Swal.fire("Deleted!", "The item has been deleted.", "success");
-      } catch (error) {
-        Swal.fire("Error", "An error occurred while deleting.", "error");
-        console.error(error);
-      }
     }
   };
   const handleSearchVehicle = () => {
@@ -198,7 +139,6 @@ function DashboardPage() {
               violations={sortedViolations}
               stats={stats}
               onSelectViolation={setSelectedViolation}
-              onDeleteViolation={handleDeleteViolation}
               selectedViolationId={selectedViolation?.id}
             />
           </div>
@@ -207,7 +147,6 @@ function DashboardPage() {
             <div className="md:w-1/3 border-l border-gray-700 h-full overflow-auto">
               <ViolationDetails
                 violation={selectedViolation}
-                onStatusChange={handleStatusChange}
                 onClose={handleCloseDetails}
               />
             </div>

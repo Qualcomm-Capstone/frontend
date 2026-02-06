@@ -1,39 +1,14 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Violation } from '../types';
 import { CalendarDays, MapPin, AlertCircle, X, Gauge } from 'lucide-react';
 import { getDangerLevel, calculateFine } from '../utils/helpers';
 
 interface ViolationDetailsProps {
   violation: Violation;
-  onStatusChange: (id: number, checked: boolean) => void;
   onClose: () => void;
 }
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-
-const ViolationDetails: React.FC<ViolationDetailsProps> = ({ violation, onStatusChange, onClose }) => {
-  const [isChecked, setIsChecked] = useState(violation.status === 'completed');
-
-  const handleCheckChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const checked = e.target.checked;
-    setIsChecked(checked);
-    try {
-      // TODO: 백엔드 DetectionViewSet이 ReadOnly라 PATCH 미지원. 백엔드에 status 업데이트 엔드포인트 추가 필요.
-      const response = await fetch(
-        `${API_BASE_URL}/detections/${violation.id}/`,
-        {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ status: checked ? 'completed' : 'pending' }),
-        }
-      );
-      if (!response.ok) throw new Error('Failed to update status');
-      onStatusChange(violation.id, checked);
-    } catch (error) {
-      console.error('Error updating status:', error);
-      setIsChecked(!checked);
-    }
-  };
+const ViolationDetails: React.FC<ViolationDetailsProps> = ({ violation, onClose }) => {
 
   const getSpeedLevelClass = (speed: number) => {
     if (speed >= 120) return 'text-red-400';
@@ -94,20 +69,6 @@ const ViolationDetails: React.FC<ViolationDetailsProps> = ({ violation, onStatus
             </span>
             <span className="text-sm text-gray-500 ml-1">km/h</span>
           </div>
-        </div>
-
-        {/* Check toggle */}
-        <div className="flex justify-between items-center rounded-2xl border border-white/5 bg-white/[0.02] p-4">
-          <span className="text-sm text-white">확인 처리</span>
-          <label className="relative inline-flex items-center cursor-pointer">
-            <input
-              type="checkbox"
-              checked={isChecked}
-              onChange={handleCheckChange}
-              className="sr-only peer"
-            />
-            <div className="w-10 h-5 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-5 after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-gray-400 after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-cyan-500/30 peer-checked:after:bg-cyan-400" />
-          </label>
         </div>
 
         {/* Fine */}

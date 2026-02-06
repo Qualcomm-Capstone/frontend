@@ -1,11 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { messaging, getToken, onMessage } from "../firebase";
 import axios from "axios";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const FCMNotification = () => {
-  const [token, setToken] = useState<string | null>(null);
 
   useEffect(() => {
     const requestNotificationPermission = async () => {
@@ -21,11 +20,10 @@ const FCMNotification = () => {
           });
 
           if (currentToken) {
-            setToken(currentToken);
             console.log("FCM 토큰:", currentToken);
 
             // 3. 백엔드에 토큰 등록
-            // TODO: register-fcm은 plate_number도 필요. 대시보드용 FCM 등록 엔드포인트가 별도로 필요할 수 있음.
+            // 대시보드 FCM 등록: plate_number="DASHBOARD"로 등록하면 서버에서 자동으로 dashboard_alerts 토픽에 구독됨
             try {
               await axios.post(`${API_BASE_URL}/vehicles/register-fcm/`, {
                 fcm_token: currentToken,
@@ -47,13 +45,26 @@ const FCMNotification = () => {
     };
 
     // 4. 포그라운드 메시지 핸들러
+    const unsubscribe = onMessage(messaging, (payload) => {
+      const title = payload.notification?.title || "과속 감지 알림";
+      const body = payload.notification?.body || "";
 
+      // 브라우저 네이티브 알림 표시 (NotificationCenter가 인앱 목록 관리)
+      if (Notification.permission === "granted") {
+        new Notification(title, {
+          body,
+          icon: "/favicon.ico",
+        });
+      }
+    });
 
     // 5. 초기 권한 요청
     requestNotificationPermission();
 
     // 6. 컴포넌트 언마운트 시 정리
-
+    return () => {
+      unsubscribe();
+    };
   }, []);
 
   return null;

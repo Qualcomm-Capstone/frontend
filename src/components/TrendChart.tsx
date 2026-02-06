@@ -40,10 +40,12 @@ const TrendChart: React.FC<TrendChartProps> = ({ violations }) => {
     for (let i = 6; i >= 0; i--) {
       const date = new Date(now);
       date.setDate(date.getDate() - i);
-      const dateStr = date.toISOString().split('T')[0];
+      const dayStart = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+      const dayEnd = new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1);
       const dayViolations = violations.filter(v => {
         if (!v.detected_at) return false;
-        return v.detected_at.split('T')[0] === dateStr;
+        const vDate = new Date(v.detected_at);
+        return vDate >= dayStart && vDate < dayEnd;
       });
       const avgSpeed = dayViolations.length > 0
         ? Math.round(dayViolations.reduce((s, v) => s + v.detected_speed, 0) / dayViolations.length)
